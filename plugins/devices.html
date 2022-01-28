@@ -35,7 +35,7 @@
 			if (UNAUTHORIZED($, 'devices_read'))
 				return;
 
-			$.invalid('Not implemented');
+			$.callback({ page: 1, count: 0, items: [], pages: 0 });
 		});
 
 		schema.setRead(function($) {
@@ -97,19 +97,13 @@
 	<div class="virtualwire hidden" data-if="~PATH~">
 		<label>@(Devices)</label>
 		<div class="toolbar">
-			<button class="exec" data-exec="~PATH~/create"><i class="far fa-plus-circle green"></i>@(Add)</button>
+			<button class="exec" data-exec="~PATH~/create"><i class="fa fa-plus-circle green"></i>@(Add)</button>
 			<button class="exec" data-exec="~PATH~/save" data-bind="~PATH~.changed__disabled:!value || !value.length" disabled><i class="far fa-save"></i>@(Save)</button>
-			<button class="exec" data-exec="~PATH~/options" data-bind="~PATH~.selected__enabled" disabled><i class="far fa-cog"></i>@(Options)</button>
+			<button class="exec" data-exec="~PATH~/options" data-bind="~PATH~.selected__enabled" disabled><i class="fa fa-cog"></i>@(Options)</button>
 		</div>
 	</div>
 
 	<div class="~PATH~" data-scope="~PATH~">
-
-		<div data---="formtab__?.realtime__width:250;height:250;right:10;margin:15;bottom:50" class="formtabrealtime">
-			<script type="text/html">
-				<div data-import="url:/_devices/info.html;path:{{ path }}" data-id="{{ id }}"></div>
-			</script>
-		</div>
 
 		<div data---="datagrid__?.data__margin:0;parent:auto;noborder:1;exec:?/page;highlight:1;click:?.selected;dblclick:?/realtime;button:?/buttons;checkbox:0;changed:?.changed;$assign:?.datagrid">
 			<script type="text/plain">
