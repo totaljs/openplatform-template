@@ -1,1 +1,1 @@
-// require('querybuilderpg').init(null, CONF.database, ERROR('DBMS'));
+// require('querybuilderpg').init(null, CONF.database, 0, ERROR('DBMS'));
