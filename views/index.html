@@ -9,10 +9,8 @@
 	<meta name="format-detection" content="telephone=no" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="robots" content="all,follow" />
-	<link href="//cdn.componentator.com/spa.min@19.css" rel="stylesheet" />
-	<script src="//cdn.componentator.com/spa.min@19.js"></script>
-	<script src="@{'%cdn'}/flowstream/editor.min@1.js"></script>
-	<link href="@{'%cdn'}/flowstream/editor.min@1.css" rel="stylesheet" />
+	<link href="@{'%cdn'}/spa.min@19.css" rel="stylesheet" />
+	<script src="@{'%cdn'}/spa.min@19.js"></script>
 	@{import('meta', 'head', 'default.js + func.js + ui.js', 'ui.css + default.css', 'favicon.ico')}
 </head>
 <body data---="exec">
@@ -95,7 +93,7 @@
 
 		var common = {};
 
-		common.origin = NAV.query.openplatform.substring(0, NAV.query.openplatform.indexOf('/', 15) + 1);
+		common.origin = NAV.query.openportal.substring(0, NAV.query.openportal.indexOf('/', 15) + 1);
 		common.origin && IMPORT(common.origin + 'iframe.js');
 
 		ON('@flag showloading', function() {

@@ -8,7 +8,7 @@ ON('service', function(counter) {
 		MAIN.ws.keys.wait(function(key, next) {
 			var client = MAIN.ws.connections[key];
 			if (client && client.user.expire < NOW) {
-				MODULE('openplatform').verify(client.req.query.openplatform, async function(profile) {
+				MODULE('openportal').verify(client.req.query.openportal, async function(profile) {
 					if (profile) {
 						client.user = profile;
 						client.send({ TYPE: 'account', data: await EXEC('-Account --> read', null, null, client) });

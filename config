@@ -1,6 +1,8 @@
+cdn            : https://cdn.componentator.com
 database       : postgresql://user:pass@hostname:5432/database
 
-// openplatform.json
+// openportal.json
+name           : App name
 description    : App description
 color          :
 icon           : far fa-microchip

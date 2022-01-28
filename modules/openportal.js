@@ -3,7 +3,7 @@ const EXPIRITY = 1000 * 60 * 2; // 2 minutes
 exports.version = 1;
 exports.sessions = {};
 exports.install = function() {
-	FILE('/openplatform.json', openplatform);
+	FILE('/openportal.json', openportal);
 };
 
 exports.verify = function(token, callback) {
@@ -17,7 +17,7 @@ exports.verify = function(token, callback) {
 	});
 };
 
-function openplatform(req, res) {
+function openportal(req, res) {
 
 	var meta = {};
 
@@ -62,7 +62,7 @@ function syncusers(filter, callback) {
 
 AUTH(function($) {
 
-	var verify = $.query.openplatform || $.headers.authorization || $.cookie('openplatform');
+	var verify = $.query.openportal || $.headers.authorization || $.cookie('openportal');
 
 	if (verify && verify.substring(0, 7) === 'base64 ') {
 		try {
