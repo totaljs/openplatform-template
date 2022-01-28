@@ -1,0 +1,36 @@
+<style>
+	.mainplugins h2 { margin: 0 0 15px; text-align: center; font: bold 22px Arial; }
+	.mainplugins section { height: 100%; width: 100%; display: table; }
+	.mainplugins section > div { display: table-cell; height: 100%; width: 100%; vertical-align: middle; }
+	.mainplugins section .maxwidth { max-width: 680px; width: 100%; margin: 0 auto; }
+	.mainplugins section button { width: 120px; height: 120px; margin: 10px; border-radius: var(--radius); border: 1px solid #E0E0E0; background-color: #FFF; font-size: 12px;  position: relative; display: inline-block; vertical-align: top; }
+	.mainplugins section button.highlight { background-color: #F9F9F9; }
+	.mainplugins section button i { font-size: 24px; display: block; margin-bottom: 10px; }
+	.mainplugins section button:hover { border-color: #D0D0D0; }
+</style>
+<div data-scope="~PATH~" class="~PATH~">
+	<div data---="viewbox__common.page__parent:auto;margin:60;scrollbar:1;centered:1" class="invisible">
+		<div class="maxwidth">
+			<section data-bind="common.plugins__template">
+				<script type="text/html">
+					{{ foreach m in value }}
+					<button class="exec" data-exec="?/redirect" data-url="{{ m.url }}">
+						<i class="{{ m.icon }}"></i>
+						{{ m.name }}
+					</button>
+					{{ end }}
+				</script>
+			</section>
+			<br />
+			<br />
+		</div>
+	</div>
+</div>
+
+<script>
+	PLUGIN('~PATH~', function(exports) {
+		exports.redirect = function(el) {
+			REDIRECT(el.attrd('url'));
+		};
+	});
+</script>

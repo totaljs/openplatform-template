@@ -1,0 +1,9 @@
+database       : postgresql://user:pass@hostname:5432/database
+
+// openplatform.json
+description    : App description
+color          :
+icon           : far fa-microchip
+reqtoken       : TOKEN_GENERATED_BY_THE_PLATFORM
+restoken       : TOKEN_GENERATED_BY_THE_PLATFORM
+newtab         : false

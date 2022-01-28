@@ -1,0 +1,212 @@
+@{layout('')}
+@{title(config.name)}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=11" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="robots" content="all,follow" />
+	<link href="//cdn.componentator.com/spa.min@19.css" rel="stylesheet" />
+	<script src="//cdn.componentator.com/spa.min@19.js"></script>
+	<script src="@{'%cdn'}/flowstream/editor.min@1.js"></script>
+	<link href="@{'%cdn'}/flowstream/editor.min@1.css" rel="stylesheet" />
+	@{import('meta', 'head', 'default.js + func.js + ui.js', 'ui.css + default.css', 'favicon.ico')}
+</head>
+<body data---="exec">
+
+	<div data---="LAZY directory__null__placeholder:@(Search)"></div>
+	<div data---="LAZY menu__null__style:2"></div>
+	<div data---="LAZY approve"></div>
+	<div data---="LAZY datepicker"></div>
+	<div data---="LAZY colorpicker"></div>
+	<div data---="LAZY faicons"></div>
+	<div data---="LAZY clipboard"></div>
+
+	<div data---="message"></div>
+	<div data---="loading"></div>
+	<div data---="floatingbox__null__zindex:10"></div>
+
+	<div>
+
+		<div data---="part__common.form__if:driverform;url:/parts/driver.html;invisible:1;absolute:1;reload:?/reload" class="hidden invisible"></div>
+
+		<header>
+			<span class="mainmenu exec" data-exec="common/menu"><i class="fa fa-th"></i></span>
+			<div data---="virtualwire__common.page"></div>
+		</header>
+
+		<div class="parts" id="mainparts">
+			@{foreach m in model}
+			<div data---="part__common.page__if:plugin@{m.id};url:@{#}/_@{m.id}/index.html;reload:?/reload;delayloading:600;id:@{m.id}" class="hidden invisible" data-pname="@{m.name}" data-pid="@{m.id}" data-picon="@{m.icon}" data-pimport="@{m.import}" data-pposition="@{m.position}"></div>
+			@{end}
+		</div>
+		<div data---="part__common.page__if:mainplugins;url:/parts/index.html;reload:?/reload;delayloading:600" class="hidden invisible"></div>
+	</div>
+
+	<script>
+
+		COMPONENT('message', function(self) {
+
+			self.response = function(success, callback, response) {
+
+				if (typeof(success) === 'function') {
+					response = callback;
+					callback = success;
+					success = null;
+				}
+
+				if (response instanceof Array) {
+					SETTER('loading/hide', 600);
+					APP.warning(response[0].error || '@(Unexpected error)');
+				} else {
+					success && APP.success(success);
+					callback && callback(response);
+				}
+
+			};
+
+			self.success = function(msg) {
+				APP.success(msg);
+			};
+
+			self.warning = function(msg) {
+				APP.warning(msg);
+			};
+
+		});
+
+		COMPONENT('loading', function(self) {
+
+			self.singleton();
+
+			self.show = function() {
+				APP.loading(true);
+			};
+
+			self.hide = function(timeout) {
+				APP.loading(false, timeout);
+			};
+
+		});
+
+		NAV.custom(false);
+		NAV.clientside('.jR');
+
+		var common = {};
+
+		common.origin = NAV.query.openplatform.substring(0, NAV.query.openplatform.indexOf('/', 15) + 1);
+		common.origin && IMPORT(common.origin + 'iframe.js');
+
+		ON('@flag showloading', function() {
+			SETTER('loading/show');
+		});
+
+		ON('@flag hideloading', function() {
+			SETTER('loading/hide', 1000);
+		});
+
+		WAIT('APP', function() {
+
+			APP.init(function(data) {
+
+				WAPI({ url: location.href.replace('https', 'wss'), message: function(msg) {
+					if (msg.TYPE === 'logout')
+						APP.close();
+				}});
+
+				DEF.dateformat = data.profile.df;
+				ENV('ts', data.profile.df + ' HH:mm' + (data.profile.ft === 24 ? '' : ' a'));
+				ENV('date', data.profile.df);
+				EXEC('common/refresh_account');
+			});
+
+			APP.on('path', function(path, focus) {
+				if (NAV.url !== path)
+					REDIRECT(path || '/');
+				common.ready = true;
+			});
+
+			var plugins = [];
+
+			(function() {
+
+				var nodes = $('#mainparts').find('> div').toArray();
+				nodes.wait(function(node, next) {
+					var el = $(node);
+					var obj = {};
+					obj.id = el.attrd('pid');
+					obj.name = el.attrd('pname');
+					obj.icon = el.attrd('picon');
+					obj.import = el.attrd('pimport');
+					obj.position = +el.attrd('pposition');
+					obj.url = '/' + obj.id + '/';
+					obj.import && IMPORT(obj.import);
+					plugins.push(obj);
+
+					ROUTE(obj.url, function() {
+						APP.path(obj.url);
+						SET('common.page', 'plugin' + obj.id);
+					}, 'ready');
+
+					next();
+
+				}, function() {
+					plugins.quicksort('position');
+					SET('common.plugins', plugins);
+				});
+
+			})();
+
+		});
+
+		PLUGIN('common', function(exports) {
+
+			exports.redirect = function(el) {
+				REDIRECT(el.attrd('if'));
+			};
+
+			exports.refresh_account = function(callback) {
+				WAPI('account', function(response) {
+					W.user = response;
+					UPD('user');
+					callback && callback();
+				});
+			};
+
+			exports.menu = function(el) {
+				var data = exports.data;
+				var opt = {};
+				opt.element = el;
+				opt.items = [];
+
+				for (var item of data.plugins)
+					opt.items.push({ url: item.id, icon: item.icon, name: item.name, selected: NAV.url === item.url });
+
+				opt.align = 'left';
+				opt.callback = function(selected) {
+					REDIRECT(selected.url);
+				};
+
+				SETTER('menu/show', opt);
+			};
+
+		});
+
+		ROUTE('/', function() {
+			if (common.ready) {
+				SET('common.page', 'mainplugins');
+				APP.path('');
+			}
+		}, 'ready');
+
+		MIDDLEWARE('ready', function(next) {
+			WAIT(() => W.user && common.plugins && common.plugins.length, next);
+		});
+
+	</script>
+
+</body>
+</html>

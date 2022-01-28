@@ -1,2 +1,2 @@
-# openplatform-template
-OpenPlatform template
+# OpenPlatform App Template
+

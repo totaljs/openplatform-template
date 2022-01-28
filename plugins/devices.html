@@ -1,0 +1,293 @@
+<script total>
+
+	exports.icon = 'fa fa-microchip';
+	exports.name = '@(Devices)';
+	exports.position = 1;
+	exports.permissions = [{ id: 'devices_read', name: 'Devices: read' }, { id: 'devices_save', name: 'Devices: save' }, { id: 'devices_remove', name: 'Devices: remove' }];
+	exports.visible = user => user.sa || user.permissions.includes('devices_read');
+
+	exports.install = function() {
+		ROUTE('+API    @api    -devices_list                *Devices           --> list');
+		ROUTE('+API    @api    -devices_read/{id}/          *Devices           --> read');
+		ROUTE('+API    @api    +devices_save                *Devices           --> save');
+		ROUTE('+API    @api    -devices_remove/{id}         *Devices           --> remove');
+		ROUTE('+API    @api    #devices_partial/{id}        *Devices/Partial   --> save');
+	};
+
+	NEWSCHEMA('Devices', function(schema) {
+
+		schema.define('id', 'UID');
+		schema.define('driverid', 'String', true);
+		schema.define('placeid', 'String(50)');
+		schema.define('controllerid', 'UID');
+		schema.define('categoryid', 'UID');
+		schema.define('name', 'String(50)');
+		schema.define('location', 'String(200)');
+		schema.define('reference', 'String(100)');
+		schema.define('sn', 'String(80)');
+		schema.define('note', 'String(1000)');
+		schema.define('notes', 'String');
+		schema.define('isdisabled', 'Boolean');
+		schema.define('attachments', '[Attachments]');
+
+		schema.setList(function($) {
+
+			if (UNAUTHORIZED($, 'devices_read'))
+				return;
+
+			$.invalid('Not implemented');
+		});
+
+		schema.setRead(function($) {
+
+			if (UNAUTHORIZED($, 'devices_read'))
+				return;
+
+			$.invalid('Not implemented');
+		});
+
+		schema.setSave(function($, model) {
+
+			if (UNAUTHORIZED($, 'devices_save'))
+				return;
+
+			$.invalid('Not implemented');
+		});
+
+		schema.setRemove(function($) {
+
+			if (UNAUTHORIZED($, 'devices_remove'))
+				return;
+
+			$.invalid('Not implemented');
+		});
+	});
+
+	NEWSCHEMA('Devices/Partial', function(schema) {
+
+		schema.define('name', 'String(50)');
+		schema.define('location', 'String(200)');
+		schema.define('reference', 'String(100)');
+		schema.define('sn', 'String(80)');
+		schema.define('note', 'String(1000)');
+
+		schema.setSave(function($, model) {
+
+			if (UNAUTHORIZED($, 'devices_save'))
+				return;
+
+			$.invalid('Not implemented');
+		});
+
+	});
+
+
+</script>
+
+<file name="index.html">
+
+	<style>
+		.~PATH~ code { font-size: 11px; font-family: Menlo, Consolas, monospace; color: gray; }
+		.~PATH~ .icon { width: 14px; margin-right: 5px; text-align: center; }
+		.~PATH~ .highlight { background-color: rgba(0,0,0,0.03); }
+		.~PATH~ .offline .dg-col { background-color: rgba(246,206,205,0.1); }
+		.~PATH~ .online { margin-right: 5px; font-size: 11px; }
+	</style>
+
+	<div class="virtualwire hidden" data-if="~PATH~">
+		<label>@(Devices)</label>
+		<div class="toolbar">
+			<button class="exec" data-exec="~PATH~/create"><i class="far fa-plus-circle green"></i>@(Add)</button>
+			<button class="exec" data-exec="~PATH~/save" data-bind="~PATH~.changed__disabled:!value || !value.length" disabled><i class="far fa-save"></i>@(Save)</button>
+			<button class="exec" data-exec="~PATH~/options" data-bind="~PATH~.selected__enabled" disabled><i class="far fa-cog"></i>@(Options)</button>
+		</div>
+	</div>
+
+	<div class="~PATH~" data-scope="~PATH~">
+
+		<div data---="formtab__?.realtime__width:250;height:250;right:10;margin:15;bottom:50" class="formtabrealtime">
+			<script type="text/html">
+				<div data-import="url:/_devices/info.html;path:{{ path }}" data-id="{{ id }}"></div>
+			</script>
+		</div>
+
+		<div data---="datagrid__?.data__margin:0;parent:auto;noborder:1;exec:?/page;highlight:1;click:?.selected;dblclick:?/realtime;button:?/buttons;checkbox:0;changed:?.changed;$assign:?.datagrid">
+			<script type="text/plain">
+				[
+					'{{ if !isonline }} offline{{ fi }}',
+					{ name: 'id', text: '@(ID)', width: 120, class: 'gray', hide: true },
+					{ name: 'name', text: '@(Name)', width: 200, class: 'b', template: '<i class="fas online fa-dot-circle {{ if isonline }}green{{ else }}red{{ fi}}"></i>{{ name }}{{ if isattachment }}<i class="far fa-paperclip ml5"></i>{{ fi }}', editable: 0, type: 'string' },
+					{ name: 'location', text: '@(Location)', width: 200, editable: 1, type: 'string' },
+					{ name: 'note', text: '@(Note)', width: 200, editable: 1, type: 'string' },
+					{ name: 'reference', text: '@(Reference)', template: '<code>{{ reference }}</code>', editable: 1, type: 'string' },
+					{ name: 'driver_manufacturer', text: '@(Manufacturer)' },
+					{ name: 'sn', text: '@(S/N)', alignheader: 1, width: 200, template: '<code>{{ sn }}</code>', editable: 1, type: 'string' },
+					{ name: 'isonline', text: '@(Online)', align: 1, align: 1, type: 'boolean', width: 100, options: [{ value: true, text: 'Online' }, { value: false, text: 'Offline' }] },
+					{ name: 'dtdata', text: '@(Last data)', align: 1, format: '[ts]', align: 1 },
+					{ name: 'dtstatus', text: '@(Last status)', align: 1, format: '[ts]', align: 1 },
+					{ name: 'dtupdated', text: '@(Updated)', align: 1, format: '[date]', align: 1 },
+					{ name: 'dtcreated', text: '@(Created)', align: 1, format: '[date]', align: 1 },
+					{ type: 'controls', template: '<button name="edit"><i class="far fa-pencil"></i></button><button name="remove"><i class="far fa-trash-o red"></i></button>' }
+				]
+			</script>
+		</div>
+
+	</div>
+
+	<div data---="importer__common.form__if:~PATH~form;url:/_~ID~/form.html"></div>
+
+	<script>
+
+		PLUGIN('~PATH~', function(exports) {
+
+			exports.reload = function() {
+				if (exports.data.data)
+					exports.refresh();
+			};
+
+			exports.page = function(type, filter, sort, page) {
+				if (!filter)
+					filter = {};
+				if (sort)
+					filter.sort = sort.join(',');
+				if (page)
+					filter.page = page;
+				WAPI(QUERIFY('devices_list', filter), '?.data');
+			};
+
+			exports.refresh = function() {
+				NUL('?.data');
+			};
+
+			exports.edit = function(row) {
+				WAPI('devices_read/' + row.id, function(response) {
+					var path = exports.name + 'form';
+					SET(path + ' @reset', response);
+					SET('common.form', path);
+				});
+			};
+
+			exports.remove = function(el) {
+				var id = ATTRD(el);
+				var item = exports.data.data.items.findItem('id', id);
+				APP.approve('@(Are you sure you want to remove <b>"{name}"</b>?)'.arg(item, 'escape'), '"far fa-trash-alt" @(Remove)', function() {
+					exports.scope();
+					WAPI('devices_remove/' + id, ASETTER('message/response', '@(Device has been removed successfully)', exports.refresh));
+				});
+			};
+
+			exports.buttons = function(btn, row) {
+				exports[btn](row);
+			};
+
+			exports.save = function() {
+				APP.loading(true);
+				exports.data.changed.wait(function(item, next) {
+
+					var model = {};
+					for (var key in item.CHANGES)
+						model[key] = item[key];
+
+					WAPI('devices_partial/' + item.id, model, next);
+
+				}, function() {
+					APP.success('@(Devices have been updated)');
+					APP.loading(false);
+					exports.data.datagrid.clear();
+				});
+			};
+
+			exports.create = function() {
+				var path = exports.name + 'form';
+				SET(path + ' @default', {});
+				SET('common.form', path);
+			};
+
+		});
+	</script>
+
+</file>
+
+<file name="form.html">
+
+	<style>
+		.~PATH~ .listing2 figure > section { padding: 5px 8px; }
+		.~PATH~ .listing2 figure > section a > i { width: 14px; text-align: center; margin-right: 5px; }
+		.~PATH~ .listing2 figure > section a { color: #000; display: block; }
+	</style>
+
+	<div data---="box__common.form__if:~PATH~;align:right;background:false;transparent:true;icon:far fa-cctv;autofocus:true;reload:?/reload;scrollbar:1;submit:?/submit;width:550" class="hidden" data-scope="~PATH~">
+		<div class="~PATH~">
+
+			<div class="padding">
+
+				<div class="caption m">
+					<label>@(Meta data)</label>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6 m">
+						<div data---="input__?.name__required:1">@(Name)</div>
+					</div>
+					<div class="col-md-6 m">
+						<div data---="input__?.location__required:1;icon:far fa-map-marker">@(Location)</div>
+					</div>
+					<div class="col-md-6 m">
+						<div data---="input__?.reference"><b>@(Reference)</b></div>
+						<div class="help">@(It may contain a device identifier)</div>
+					</div>
+					<div class="col-md-6 m">
+						<div data---="input__?.sn__icon:far fa-barcode-alt">@(Serial number)</div>
+						<div class="help">@(Device serial number)</div>
+					</div>
+				</div>
+
+				<hr />
+
+				<div data---="input__?.note">@(Quick note)</div>
+				<div class="help m">@(You can define a simple note that you see directly in the list of devices)</div>
+
+			</div>
+			<hr class="nmt" style="margin-bottom:5px" />
+			<div class="padding">
+
+				<div class="caption m">
+					<label>@(Additional information)</label>
+				</div>
+
+				<div data---="inputtags__?.tags__placeholder:@(Type a tag and press enter)" class="m">@(Tags)</div>
+				<div data---="input__?.notes__type:multiline;monospace:1" class="m">@(Notes)</div>
+
+			</div>
+		</div>
+		<nav data---="validate__?">
+			<button name="submit" disabled><i class="fa fa-check-circle"></i>@(SUBMIT)</button>
+			<button name="cancel">@(Cancel)</button>
+		</nav>
+	</div>
+
+	<script>
+
+		PLUGIN('~PATH~', function(exports) {
+
+			exports.reload = function(com) {
+				var model = exports.data;
+				var id = model ? model.id : null;
+				com.reconfigure({ title: id ? '@(Update device)' : '@(Register new device)' });
+			};
+
+			exports.submit = function(hide) {
+				var model = exports.form;
+				WAPI('devices_save @showloading', model, ASETTER('message/response @hideloading', function(response) {
+					if (!model.id && response.value)
+						setTimeout(AEXEC('plugindevices/settings', response.value), 1500);
+					EXEC('plugindevices/refresh');
+					hide();
+				}));
+			};
+
+		});
+
+	</script>
+
+</file>
